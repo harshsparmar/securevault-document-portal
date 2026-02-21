@@ -132,6 +132,7 @@
                     let pdfDoc = null;
                     let currentPage = 1;
                     let zoomFactor = 1.0;
+                    let baseContainerWidth = 0;
                     const BASE_RENDER_SCALE = 2.0;
 
                     async function loadPdf() {
@@ -189,7 +190,8 @@
 
                     function applyZoom() {
                         const container = document.getElementById('pdf-pages');
-                        const targetWidth = container.clientWidth * zoomFactor;
+                        if (!baseContainerWidth) baseContainerWidth = container.clientWidth;
+                        const targetWidth = baseContainerWidth * zoomFactor;
                         container.querySelectorAll('.pdf-page__inner').forEach(el => {
                             el.style.width = targetWidth + 'px';
                             el.style.maxWidth = 'none';

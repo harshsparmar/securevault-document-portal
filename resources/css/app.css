@@ -252,19 +252,19 @@
     }
 
     .pdf-canvas-area {
-        @apply overflow-y-auto overflow-x-hidden bg-gray-100;
+        @apply overflow-auto bg-gray-100;
         max-height: 78vh;
         -webkit-user-select: none;
         user-select: none;
     }
 
     .pdf-page {
-        @apply flex justify-center py-3;
+        @apply py-3 w-full text-center;
         user-select: none;
     }
 
     .pdf-page__inner {
-        @apply relative shadow-lg bg-white rounded-sm;
+        @apply relative shadow-lg bg-white rounded-sm mx-auto inline-block text-left;
         user-select: none;
         transform-origin: top center;
     }
