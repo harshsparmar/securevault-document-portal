@@ -38,4 +38,12 @@ class DocumentPolicy
     {
         return true; // Any authenticated user can preview
     }
+
+    /**
+     * Determine if the user can delete a document.
+     */
+    public function delete(User $user, Document $document): bool
+    {
+        return $user->isUploader() && $user->id === $document->user_id;
+    }
 }

@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:uploader')->group(function () {
         Route::get('/upload', [DocumentController::class, 'create'])->name('documents.create');
         Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
     });
 });
 

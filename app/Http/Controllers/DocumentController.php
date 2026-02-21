@@ -102,4 +102,18 @@ class DocumentController extends Controller
 
         return $this->previewService->getPreviewResponse($document);
     }
+
+    /**
+     * Remove the specified document. Uploaders only.
+     */
+    public function destroy(Request $request, Document $document): RedirectResponse
+    {
+        $this->authorize('delete', $document);
+
+        $this->documentService->delete($document);
+
+        return redirect()
+            ->route('documents.index')
+            ->with('success', 'Document deleted successfully.');
+    }
 }

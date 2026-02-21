@@ -78,4 +78,23 @@ class DocumentService
             ]
         );
     }
+
+    /**
+     * Delete a document and its associated storage files.
+     */
+    public function delete(Document $document): void
+    {
+        $disk = Storage::disk('local');
+        
+        $filesToDelete = array_filter([
+            $document->storage_path,
+            $document->preview_path,
+        ]);
+        
+        if (!empty($filesToDelete)) {
+            $disk->delete($filesToDelete);
+        }
+
+        $document->delete();
+    }
 }
