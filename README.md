@@ -18,9 +18,10 @@ A **production-ready document management platform** built with Laravel 12, featu
 
 | Feature | Description |
 |---|---|
-| 🔐 **Role-Based Access** | Two roles — `uploader` (upload + view) and `viewer` (view only) |
+| 🔐 **Role-Based Access** | Two roles — `uploader` (upload + view + delete) and `viewer` (view only) |
 | 📄 **Multi-Format Preview** | PDF, DOCX, XLSX, PPTX, TXT — all rendered in-browser |
 | 🔄 **PHP-Native Conversion** | Office files converted to HTML using phpoffice |
+| 🗑️ **Secure Deletion** | Uploaders can only delete their own uploaded documents |
 | 🔗 **Signed URLs** | Document links expire after 30 minutes and can't be shared |
 | 🌙 **Dark Mode** | System-wide dark mode with true black backgrounds and high contrast |
 | 📱 **Responsive Design** | Mobile-first UI with Tailwind CSS |
@@ -49,7 +50,8 @@ A **production-ready document management platform** built with Laravel 12, featu
 │                       │     ├── GET /documents/{id} ► show (signed) │
 │                       │     ├── GET /documents/{id}/preview (AJAX)  │
 │                       │     ├── GET /upload ─────────► create       │
-│                       │     └── POST /documents ─────► store        │
+│                       │     ├── POST /documents ─────► store        │
+│                       │     └── DELETE /documents/{id}► destroy     │
 │                       │                                             │
 │                       └── Profile Routes                            │
 │                             ├── Update Profile                      │
@@ -62,10 +64,11 @@ A **production-ready document management platform** built with Laravel 12, featu
 │   │ DocumentController│────────►│ DocumentService   │               │
 │   │                  │          │  • store()        │                │
 │   │  • index()       │          │  • getAll()       │                │
-│   │  • create()      │          └──────────────────┘                │
-│   │  • store()       │          ┌──────────────────┐                │
-│   │  • show()        │────────►│ PreviewService    │                │
-│   │  • preview()     │          │  • generatePreview│                │
+│   │  • create()      │          │  • delete()       │                │
+│   │  • store()       │          └──────────────────┘                │
+│   │  • show()        │          ┌──────────────────┐                │
+│   │  • preview()     │────────►│ PreviewService    │                │
+│   │  • destroy()     │          │  • generatePreview│                │
 │   └──────────────────┘          │  • convertDocx    │                │
 │                                 │  • convertXlsx    │                │
 │   ┌──────────────────┐          │  • convertPptx    │                │
@@ -83,6 +86,7 @@ A **production-ready document management platform** built with Laravel 12, featu
 │   │  • view()      │  │  • viewer    │  │  • preview route  │      │
 │   │  • upload()    │  │              │  │                   │      │
 │   │  • preview()   │  │              │  │                   │      │
+│   │  • delete()    │  │              │  │                   │      │
 │   └────────────────┘  └──────────────┘  └───────────────────┘      │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -152,8 +156,8 @@ securevault/
 | Layer | Implementation |
 |---|---|
 | **Authentication** | Laravel Breeze (login, register, password reset, email verification) |
-| **Authorization** | `DocumentPolicy` — role-based (uploader/viewer) |
-| **Route Protection** | `RoleMiddleware` restricts upload routes to uploaders only |
+| **Authorization** | `DocumentPolicy` — role-based (uploader/viewer), plus ownership validation for deletion |
+| **Route Protection** | `RoleMiddleware` restricts upload and delete routes to uploaders only |
 | **Signed URLs** | Document view/preview links expire after 30 minutes |
 | **AJAX-Only Preview** | Preview endpoint rejects direct browser navigation |
 | **Sandboxed Iframes** | Document previews render in sandboxed iframes |
