@@ -44,8 +44,12 @@ RUN npm ci && npm run build
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
     && mkdir -p /var/data/database /var/data/documents /var/data/previews
 
-# Startup script
-RUN chmod +x /var/www/docker/start.sh
+# Fix Windows line endings in startup script and make executable
+RUN sed -i 's/\r$//' /var/www/docker/start.sh \
+    && chmod +x /var/www/docker/start.sh
+
+# Create .env if missing (Render sets env vars, but Laravel needs the file)
+RUN cp -n /var/www/.env.example /var/www/.env || true
 
 EXPOSE 8000
 CMD ["/var/www/docker/start.sh"]
