@@ -9,8 +9,10 @@ mkdir -p /var/data/documents
 mkdir -p /var/data/previews
 
 # Create SQLite database if it doesn't exist
+NEED_SEED=false
 if [ ! -f /var/data/database/database.sqlite ]; then
     touch /var/data/database/database.sqlite
+    NEED_SEED=true
     echo "Created new SQLite database"
 fi
 
@@ -40,6 +42,12 @@ php artisan config:clear
 # Run migrations
 php artisan migrate --force
 echo "Migrations complete"
+
+# Seed on first run only (when database was just created)
+if [ "$NEED_SEED" = true ]; then
+    php artisan db:seed --force
+    echo "Database seeded with demo accounts"
+fi
 
 # Cache routes and views for performance
 php artisan route:cache
