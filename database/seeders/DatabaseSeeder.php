@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,18 +13,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create demo uploader
-        User::factory()->create([
-            'name'  => 'Uploader User',
-            'email' => 'uploader@gmail.com',
-            'role'  => 'uploader',
-        ]);
+        // Create demo uploader (skip if already exists)
+        User::firstOrCreate(
+            ['email' => 'uploader@gmail.com'],
+            [
+                'name'     => 'Uploader User',
+                'password' => Hash::make('password'),
+                'role'     => 'uploader',
+            ]
+        );
 
-        // Create demo viewer
-        User::factory()->create([
-            'name'  => 'Viewer User',
-            'email' => 'viewer@gmail.com',
-            'role'  => 'viewer',
-        ]);
+        // Create demo viewer (skip if already exists)
+        User::firstOrCreate(
+            ['email' => 'viewer@gmail.com'],
+            [
+                'name'     => 'Viewer User',
+                'password' => Hash::make('password'),
+                'role'     => 'viewer',
+            ]
+        );
     }
 }
