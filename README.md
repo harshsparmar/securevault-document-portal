@@ -1,59 +1,324 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel 12">
+  <img src="https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
 </p>
 
-## About Laravel
+# 🛡️ SecureVault — Secure Document Portal
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+A **production-ready document management platform** built with Laravel 12, featuring role-based access control, in-browser document previews, dark mode, and zero external dependencies for file conversion.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+> **Live Demo:** [securevault-document-portal.onrender.com](https://securevault-document-portal.onrender.com)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## ✨ Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+| Feature | Description |
+|---|---|
+| 🔐 **Role-Based Access** | Two roles — `uploader` (upload + view) and `viewer` (view only) |
+| 📄 **Multi-Format Preview** | PDF, DOCX, XLSX, PPTX, TXT — all rendered in-browser |
+| 🔄 **PHP-Native Conversion** | Office files converted to HTML using phpoffice |
+| 🔗 **Signed URLs** | Document links expire after 30 minutes and can't be shared |
+| 🌙 **Dark Mode** | System-wide dark mode with true black backgrounds and high contrast |
+| 📱 **Responsive Design** | Mobile-first UI with Tailwind CSS |
+| 🛡️ **Sandboxed Previews** | Documents rendered in sandboxed iframes, AJAX-only endpoints |
+| ✅ **Client-Side Validation** | File type and size checks before upload (max 20MB) |
+| 🔑 **Password Security** | New password can't match current password on reset |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🏗️ Architecture
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        SecureVault Architecture                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Browser ──────► Laravel Routes (web.php)                          │
+│                       │                                             │
+│                       ├── Auth Routes (Breeze)                      │
+│                       │     ├── Login / Register                    │
+│                       │     ├── Password Reset (read-only email)    │
+│                       │     └── Email Verification                  │
+│                       │                                             │
+│                       ├── Document Routes (signed URLs)             │
+│                       │     ├── GET /documents ─────► index         │
+│                       │     ├── GET /documents/{id} ► show (signed) │
+│                       │     ├── GET /documents/{id}/preview (AJAX)  │
+│                       │     ├── GET /upload ─────────► create       │
+│                       │     └── POST /documents ─────► store        │
+│                       │                                             │
+│                       └── Profile Routes                            │
+│                             ├── Update Profile                      │
+│                             └── Update Password                     │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Controllers                    Services                           │
+│   ┌──────────────────┐          ┌──────────────────┐                │
+│   │ DocumentController│────────►│ DocumentService   │               │
+│   │                  │          │  • store()        │                │
+│   │  • index()       │          │  • getAll()       │                │
+│   │  • create()      │          └──────────────────┘                │
+│   │  • store()       │          ┌──────────────────┐                │
+│   │  • show()        │────────►│ PreviewService    │                │
+│   │  • preview()     │          │  • generatePreview│                │
+│   └──────────────────┘          │  • convertDocx    │                │
+│                                 │  • convertXlsx    │                │
+│   ┌──────────────────┐          │  • convertPptx    │                │
+│   │ ProfileController │          │  • getTextContent │                │
+│   │ PasswordController│          └──────────────────┘                │
+│   │ NewPasswordCtrl   │                                              │
+│   └──────────────────┘                                              │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Security Layer                                                    │
+│   ┌────────────────┐  ┌──────────────┐  ┌───────────────────┐      │
+│   │ DocumentPolicy  │  │ RoleMiddleware│  │ Signed URL (30min)│      │
+│   │  • viewAny()   │  │  • uploader  │  │  • show route     │      │
+│   │  • view()      │  │  • viewer    │  │  • preview route  │      │
+│   │  • upload()    │  │              │  │                   │      │
+│   │  • preview()   │  │              │  │                   │      │
+│   └────────────────┘  └──────────────┘  └───────────────────┘      │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   Storage (Private)              Database (SQLite)                  │
+│   storage/app/private/           ┌──────────────────┐              │
+│   ├── documents/ (originals)     │ users (+ role)   │              │
+│   └── previews/  (HTML cache)    │ documents        │              │
+│                                  │ sessions         │              │
+│                                  │ cache            │              │
+│                                  └──────────────────┘              │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 📂 Project Structure
 
-## Contributing
+```
+securevault/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── DocumentController.php    # Document CRUD + preview
+│   │   │   ├── ProfileController.php     # User profile management
+│   │   │   └── Auth/                     # Breeze auth controllers
+│   │   ├── Middleware/
+│   │   │   └── RoleMiddleware.php        # Role-based route guarding
+│   │   └── Requests/
+│   │       └── StoreDocumentRequest.php  # Upload validation rules
+│   ├── Models/
+│   │   ├── User.php                      # User model (with role)
+│   │   └── Document.php                  # Document model (UUID, mime, paths)
+│   ├── Policies/
+│   │   └── DocumentPolicy.php           # Authorization rules per role
+│   ├── Providers/
+│   │   └── AppServiceProvider.php       # HTTPS forcing, policy registration
+│   └── Services/
+│       ├── DocumentService.php          # File storage & retrieval
+│       └── PreviewService.php           # Office → HTML conversion engine
+├── config/
+│   └── documents.php                    # Allowed types, size limits, paths
+├── database/
+│   ├── migrations/                      # Schema: users, documents, role column
+│   ├── factories/                       # Test factories
+│   └── seeders/
+│       └── DatabaseSeeder.php           # Demo uploader + viewer accounts
+├── resources/
+│   ├── css/app.css                      # Design system + dark mode overrides
+│   └── views/
+│       ├── layouts/                     # app, guest, navigation
+│       ├── auth/                        # login, register, reset-password
+│       ├── documents/                   # index, show, upload
+│       ├── components/                  # Breeze UI components
+│       └── vendor/mail/                 # Custom email branding
+├── docker/
+│   └── start.sh                         # Production startup script
+├── Dockerfile                           # Production Docker image
+├── docker-compose.yml                   # Local Docker development
+└── render.yaml                          # Render deployment blueprint
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🔒 Security Features
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Layer | Implementation |
+|---|---|
+| **Authentication** | Laravel Breeze (login, register, password reset, email verification) |
+| **Authorization** | `DocumentPolicy` — role-based (uploader/viewer) |
+| **Route Protection** | `RoleMiddleware` restricts upload routes to uploaders only |
+| **Signed URLs** | Document view/preview links expire after 30 minutes |
+| **AJAX-Only Preview** | Preview endpoint rejects direct browser navigation |
+| **Sandboxed Iframes** | Document previews render in sandboxed iframes |
+| **Private Storage** | Files stored in `storage/app/private/` (not publicly accessible) |
+| **Password Validation** | New password must differ from current password |
+| **CSRF Protection** | All forms include CSRF tokens |
+| **Input Validation** | Server-side + client-side file type/size validation |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 📄 Supported File Types
 
-## License
+| Type | Extension | Preview Method |
+|---|---|---|
+| PDF | `.pdf` | Native browser rendering via PDF.js |
+| Word | `.docx` | Converted to HTML via PhpWord |
+| Excel | `.xlsx` | Converted to styled HTML table via PhpSpreadsheet |
+| PowerPoint | `.pptx` | Converted to HTML slide cards via PhpPresentation |
+| Text | `.txt` | Rendered directly in `<pre>` tag |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> **All Office conversions use pure PHP libraries** — no external binaries, no system dependencies.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- PHP 8.2+
+- Composer
+- Node.js 18+
+- SQLite
+
+### Local Development
+
+```bash
+# Clone the repo
+git clone https://github.com/YOUR_USERNAME/securevault-document-portal.git
+cd securevault-document-portal
+
+# Install dependencies
+composer install
+npm install
+
+# Environment setup
+cp .env.example .env
+php artisan key:generate
+
+# Create database and seed
+touch database/database.sqlite
+php artisan migrate
+php artisan db:seed
+
+# Build frontend assets
+npm run build
+
+# Start the server
+php artisan serve
+```
+
+Visit `http://localhost:8000` and log in with:
+
+| Email | Password | Role |
+|---|---|---|
+| `uploader@gmail.com` | `password` | Uploader (can upload + view) |
+| `viewer@gmail.com` | `password` | Viewer (can view only) |
+
+### Development with Hot Reload
+
+```bash
+# Terminal 1: Laravel server
+php artisan serve
+
+# Terminal 2: Vite dev server (hot reload for CSS/JS)
+npm run dev
+```
+
+---
+
+## 🐳 Docker
+
+### Using Docker Compose (Local)
+
+```bash
+docker-compose up --build
+```
+
+### Manual Docker Build
+
+```bash
+docker build -t securevault .
+docker run -p 8000:8000 -v securevault-data:/var/data securevault
+```
+
+---
+
+## ☁️ Deploy to Render
+
+This project includes a **Render Blueprint** (`render.yaml`) for one-click deployment.
+
+### Steps
+
+1. Push to a GitHub repository
+2. Go to [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint**
+3. Connect your GitHub repo — Render auto-detects `render.yaml`
+4. Set environment variable `APP_KEY` (run `php artisan key:generate --show` locally)
+5. Choose **Starter plan** ($7/mo — required for persistent disk)
+
+### Important Environment Variables
+
+| Variable | Value |
+|---|---|
+| `APP_KEY` | `base64:...` (generated via artisan) |
+| `APP_ENV` | `production` |
+| `APP_URL` | `https://your-service.onrender.com` |
+| `DB_CONNECTION` | `sqlite` |
+| `DB_DATABASE` | `/var/data/database/database.sqlite` |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run auth tests only
+php artisan test --filter=Auth
+
+# Run document tests only
+php artisan test --filter=Document
+```
+
+**Test coverage includes:** Authentication flows, password reset validation, document policy authorization, document upload/view permissions, and role-based access control.
+
+---
+
+## ⚙️ Configuration
+
+All document-related settings are in `config/documents.php`:
+
+```php
+return [
+    'allowed_types'      => ['pdf', 'docx', 'pptx', 'xlsx', 'txt'],
+    'max_size_kb'        => env('DOCUMENT_MAX_SIZE_KB', 20480), // 20MB
+    'storage_path'       => 'private/documents',
+    'preview_path'       => 'private/previews',
+    'convertible_types'  => ['docx', 'pptx', 'xlsx'],
+    'inline_types'       => ['pdf', 'txt'],
+    'url_expiry_minutes' => env('DOCUMENT_URL_EXPIRY', 30),
+];
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Laravel 12 (PHP 8.2) |
+| **Frontend** | Blade Templates, Tailwind CSS, Alpine.js |
+| **Build Tool** | Vite 7 |
+| **Database** | SQLite |
+| **Auth** | Laravel Breeze |
+| **PDF Rendering** | PDF.js |
+| **Office Conversion** | phpoffice/phpword, phpspreadsheet, phppresentation |
+| **Deployment** | Docker, Render |
+
