@@ -9,6 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl zip unzip sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
+# Set standard timezone for the system
+ENV TZ=Asia/Kolkata
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Install ALL PHP extensions needed by Laravel + phpoffice packages
 RUN install-php-extensions \
     pdo_sqlite \

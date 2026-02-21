@@ -36,6 +36,11 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
+# Set timezone correctly in the .env if not already set by Render vars
+if ! grep -q "^APP_TIMEZONE=" /var/www/.env; then
+    echo "APP_TIMEZONE=${APP_TIMEZONE:-Asia/Kolkata}" >> /var/www/.env
+fi
+
 # Clear any cached config (important: env vars from Render override .env)
 php artisan config:clear
 
