@@ -1,20 +1,36 @@
 FROM php:8.2-cli
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
     zip \
     unzip \
-    nodejs \
-    npm \
     sqlite3 \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip \
-    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions (configure gd separately)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    pdo \
+    pdo_mysql \
+    pdo_sqlite \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+# Install Node.js v20 (Debian's default nodejs is too old)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
@@ -29,7 +45,7 @@ RUN composer install --optimize-autoloader --no-dev --no-scripts
 
 # Copy package files and build frontend
 COPY package.json package-lock.json* ./
-RUN npm install && npm run build
+RUN npm ci && npm run build
 
 # Copy rest of the application
 COPY . /var/www
@@ -41,7 +57,6 @@ RUN composer dump-autoload --optimize
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Create persistent data mount point
-# On Render, /var/data is mounted as a persistent disk
 RUN mkdir -p /var/data/database \
     && mkdir -p /var/data/documents \
     && mkdir -p /var/data/previews
@@ -50,7 +65,6 @@ RUN mkdir -p /var/data/database \
 COPY docker/start.sh /var/www/docker/start.sh
 RUN chmod +x /var/www/docker/start.sh
 
-# Render uses PORT env variable
 EXPOSE 8000
 
 CMD ["/var/www/docker/start.sh"]
