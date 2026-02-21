@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: securevault
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    disk:
+      name: securevault-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: APP_NAME
+        value: SecureVault
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        fromService:
+          type: web
+          name: securevault
+          property: host
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/data/database/database.sqlite
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: CACHE_STORE
+        value: file
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: MAIL_MAILER
+        value: log

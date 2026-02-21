@@ -1,0 +1,17 @@
+node_modules
+vendor
+.env
+.env.backup
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/logs/*
+public/build
+.git
+.github
+tests
+.editorconfig
+.styleci.yml
+phpunit.xml
+README.md
+docker-compose.yml

@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: securevault-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www
+      - document-storage:/var/www/storage/app/private
+    environment:
+      - APP_NAME=SecureVault
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/database/database.sqlite
+      - QUEUE_CONNECTION=sync
+      - FILESYSTEM_DISK=local
+    networks:
+      - portal-network
+
+volumes:
+  document-storage:
+    driver: local
+
+networks:
+  portal-network:
+    driver: bridge
