@@ -4,9 +4,6 @@ FROM php:8.2-cli
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
@@ -15,20 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (configure gd separately)
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    pdo \
-    pdo_mysql \
-    pdo_sqlite \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
-    zip
+# Install only the PHP extensions this app actually needs
+RUN docker-php-ext-install pdo pdo_sqlite mbstring bcmath zip
 
-# Install Node.js v20 (Debian's default nodejs is too old)
+# Install Node.js 20 for Vite
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
@@ -39,7 +26,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy composer files first (for Docker layer caching)
+# Copy composer files first (layer caching)
 COPY composer.json composer.lock ./
 RUN composer install --optimize-autoloader --no-dev --no-scripts
 
@@ -56,15 +43,12 @@ RUN composer dump-autoload --optimize
 # Set permissions
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Create persistent data mount point
-RUN mkdir -p /var/data/database \
-    && mkdir -p /var/data/documents \
-    && mkdir -p /var/data/previews
+# Create persistent data directories
+RUN mkdir -p /var/data/database /var/data/documents /var/data/previews
 
-# Copy the startup script
+# Startup script
 COPY docker/start.sh /var/www/docker/start.sh
 RUN chmod +x /var/www/docker/start.sh
 
 EXPOSE 8000
-
 CMD ["/var/www/docker/start.sh"]
