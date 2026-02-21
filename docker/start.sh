@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-# ============================================
-# SecureVault — Render Startup Script
-# ============================================
+echo "=== SecureVault Startup ==="
 
 # Ensure persistent directories exist
 mkdir -p /var/data/database
@@ -17,27 +15,36 @@ if [ ! -f /var/data/database/database.sqlite ]; then
 fi
 
 # Create symlinks from app storage to persistent disk
+mkdir -p /var/www/storage/app/private
 ln -sf /var/data/documents /var/www/storage/app/private/documents
 ln -sf /var/data/previews /var/www/storage/app/private/previews
 
 # Ensure storage directories exist
-mkdir -p /var/www/storage/app/private
 mkdir -p /var/www/storage/framework/sessions
 mkdir -p /var/www/storage/framework/views
-mkdir -p /var/www/storage/framework/cache
+mkdir -p /var/www/storage/framework/cache/data
 mkdir -p /var/www/storage/logs
 
 # Set permissions
 chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
+# Generate APP_KEY if not set
+if [ -z "$APP_KEY" ]; then
+    echo "APP_KEY not set, generating..."
+    php artisan key:generate --force
+fi
+
+# Clear any cached config (important: env vars from Render override .env)
+php artisan config:clear
+
 # Run migrations
 php artisan migrate --force
+echo "Migrations complete"
 
-# Cache config and routes for performance
-php artisan config:cache
+# Cache routes and views for performance
 php artisan route:cache
 php artisan view:cache
+echo "Caches built"
 
-# Start the application
-# Use PORT env var from Render, default to 8000
+echo "=== Starting server on port ${PORT:-8000} ==="
 exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
