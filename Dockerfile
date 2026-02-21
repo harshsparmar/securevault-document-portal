@@ -1,19 +1,16 @@
 FROM php:8.2-cli
 
-# Install system dependencies
+# Use the community PHP extension installer (handles all deps automatically)
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions
+
+# Install system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    sqlite3 \
+    git curl zip unzip sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install only the PHP extensions this app actually needs
-RUN docker-php-ext-install pdo pdo_sqlite mbstring bcmath zip
+# Install PHP extensions (the installer resolves all dependencies)
+RUN install-php-extensions pdo_sqlite mbstring bcmath zip
 
 # Install Node.js 20 for Vite
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
@@ -23,7 +20,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www
 
 # Copy composer files first (layer caching)
@@ -36,15 +32,11 @@ RUN npm ci && npm run build
 
 # Copy rest of the application
 COPY . /var/www
-
-# Re-run composer for post-install scripts
 RUN composer dump-autoload --optimize
 
-# Set permissions
-RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Create persistent data directories
-RUN mkdir -p /var/data/database /var/data/documents /var/data/previews
+# Permissions and directories
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
+    && mkdir -p /var/data/database /var/data/documents /var/data/previews
 
 # Startup script
 COPY docker/start.sh /var/www/docker/start.sh
