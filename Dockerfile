@@ -9,8 +9,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl zip unzip sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (the installer resolves all dependencies)
-RUN install-php-extensions pdo_sqlite mbstring bcmath zip
+# Install ALL PHP extensions needed by Laravel + phpoffice packages
+RUN install-php-extensions \
+    pdo_sqlite \
+    mbstring \
+    bcmath \
+    zip \
+    xml \
+    dom \
+    simplexml \
+    xmlwriter \
+    gd
 
 # Install Node.js 20 for Vite
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
@@ -22,24 +31,20 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy composer files first (layer caching)
-COPY composer.json composer.lock ./
-RUN composer install --optimize-autoloader --no-dev --no-scripts
-
-# Copy package files and build frontend
-COPY package.json package-lock.json* ./
-RUN npm ci && npm run build
-
-# Copy rest of the application
+# Copy ALL app files first (simpler, avoids layer issues)
 COPY . /var/www
-RUN composer dump-autoload --optimize
+
+# Install PHP deps
+RUN composer install --optimize-autoloader --no-dev
+
+# Build frontend
+RUN npm ci && npm run build
 
 # Permissions and directories
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache \
     && mkdir -p /var/data/database /var/data/documents /var/data/previews
 
 # Startup script
-COPY docker/start.sh /var/www/docker/start.sh
 RUN chmod +x /var/www/docker/start.sh
 
 EXPOSE 8000
