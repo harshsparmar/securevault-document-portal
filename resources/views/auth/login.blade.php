@@ -7,6 +7,19 @@
     <!-- Session Status -->
     <x-auth-session-status class="mt-4" :status="session('status')" />
 
+    <!-- Demo Access -->
+    <div class="auth-demo-box mt-6">
+        <p class="auth-demo-box__title">Trying the live demo? Use one of these accounts:</p>
+        <div class="auth-demo-box__row">
+            <span class="auth-demo-box__label">Uploader</span>
+            <span class="auth-demo-box__value">uploader@gmail.com / password</span>
+        </div>
+        <div class="auth-demo-box__row">
+            <span class="auth-demo-box__label">Viewer</span>
+            <span class="auth-demo-box__value">viewer@gmail.com / password</span>
+        </div>
+    </div>
+
     <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-5">
         @csrf
 

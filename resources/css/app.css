@@ -360,6 +360,26 @@
         @apply border-t border-gray-200 my-6;
     }
 
+    .auth-demo-box {
+        @apply mb-6 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm;
+    }
+
+    .auth-demo-box__title {
+        @apply font-semibold text-blue-900;
+    }
+
+    .auth-demo-box__row {
+        @apply mt-1.5 flex items-center justify-between gap-2 text-blue-800;
+    }
+
+    .auth-demo-box__label {
+        @apply text-blue-600;
+    }
+
+    .auth-demo-box__value {
+        @apply font-mono text-xs;
+    }
+
     /* ------- Navigation ------- */
     .nav-bar {
         @apply bg-white/95 backdrop-blur-sm border-b border-gray-200/80 sticky top-0 z-50;
@@ -777,6 +797,23 @@
 
 .dark .auth-link:hover {
     color: #93c5fd;
+}
+
+.dark .auth-demo-box {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.dark .auth-demo-box__title {
+    color: #bfdbfe;
+}
+
+.dark .auth-demo-box__row {
+    color: #93c5fd;
+}
+
+.dark .auth-demo-box__label {
+    color: #60a5fa;
 }
 
 /* ------- Text Preview ------- */
