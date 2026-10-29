@@ -65,6 +65,9 @@
                         <span class="text-lg font-bold text-gray-900">SecureVault</span>
                     </div>
                     {{ $slot }}
+                    <p class="mt-6 text-center text-xs text-gray-500">
+                        Built by <a href="https://www.harsh-p.dev" class="hover:underline">Harsh Parmar</a>
+                    </p>
                 </div>
             </div>
         </div>
