@@ -12,7 +12,7 @@ A **production-ready document management platform** built with Laravel 12, featu
 
 > **Live Demo:** [securevault.harsh-p.dev](https://securevault.harsh-p.dev)
 
-![SecureVault screenshot](https://www.harsh-p.dev/assets/securevault_preview.webp)
+![SecureVault screenshot](screenshot.webp)
 
 ---
 
